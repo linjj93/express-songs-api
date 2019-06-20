@@ -66,7 +66,8 @@ const deleteSong = songToDelete => {
 };
 
 //Song API
-router.param("id", (req, res, next, id) => {
+router.param("id", async (req, res, next, id) => {
+  const songs = await getSongs().catch(e => next(e));
   let song = songs.find(song => song.id === parseInt(id));
   if (!song) {
     const error = new Error(`Unable to find song with id: ${id}`);
@@ -94,19 +95,13 @@ router.post("/", async (req, res, next) => {
 
   const newSong = await createSong(req.body);
 
-  // let newSong = {
-  //     id: songs.length + 1,
-  //     name: req.body.name,
-  //     artist: req.body.artist
-  // }
-  // songs.push(newSong);
   res.status(201).json(newSong);
 });
 
 //return a song with id
 router.get("/:id", async (req, res, next) => {
-  const song = await getSong(req.params.id).catch(e => next(e));
-  res.status(200).json(song);
+  const songToFind = await getSong(req.song.id).catch(e => next(e));
+  res.status(200).json(songToFind);
 });
 
 //update a song with id, and return edited song
@@ -117,19 +112,13 @@ router.put("/:id", async (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
-
   const song = await updateSong(req.body, req.song);
-
-  //   req.song.name = req.body.name;
-  //   req.song.artist = req.body.artist;
   res.status(200).json(song);
 });
 
 //delete a song with id, and return deleted song
 router.delete("/:id", async (req, res, next) => {
   const song = await deleteSong(req.song);
-  //   let index = songs.indexOf(req.song);
-  //   songs.splice(index, 1);
   res.status(200).json(song);
 });
 
